@@ -8,7 +8,7 @@ using Mission4.Models;
 namespace Mission4.Migrations
 {
     [DbContext(typeof(MoviesDBContext))]
-    [Migration("20220127055232_Initial")]
+    [Migration("20220127063257_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,6 +50,41 @@ namespace Mission4.Migrations
                     b.HasKey("MovieID");
 
                     b.ToTable("Responses");
+
+                    b.HasData(
+                        new
+                        {
+                            MovieID = 1,
+                            Category = "Action/Adventure",
+                            Director = "Joss Whedon",
+                            Edited = false,
+                            Notes = "",
+                            Rating = "PG-13",
+                            Title = "The Avengers",
+                            Year = 2012
+                        },
+                        new
+                        {
+                            MovieID = 2,
+                            Category = "Action/Adventure",
+                            Director = "George Lucas",
+                            Edited = false,
+                            Notes = "",
+                            Rating = "PG",
+                            Title = "Star Wars Episode III: Revenge of the Sith",
+                            Year = 2005
+                        },
+                        new
+                        {
+                            MovieID = 3,
+                            Category = "Comedy",
+                            Director = "Andy Tennant",
+                            Edited = false,
+                            Notes = "",
+                            Rating = "PG-13",
+                            Title = "Hitch",
+                            Year = 2012
+                        });
                 });
 #pragma warning restore 612, 618
         }
