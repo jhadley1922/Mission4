@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Mission4.Models;
 using System;
@@ -11,13 +12,11 @@ namespace Mission4.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-        private MoviesDBContext blahContext { get; set; }
+        private MoviesDBContext mcContext { get; set; }
 
-        public HomeController(ILogger<HomeController> logger, MoviesDBContext name)
+        public HomeController(MoviesDBContext name)
         {
-            _logger = logger;
-            blahContext = name;
+            mcContext = name;
         }
 
         public IActionResult Index()
@@ -33,20 +32,84 @@ namespace Mission4.Controllers
         [HttpGet]
         public IActionResult Movies()
         {
+            ViewBag.Categories = mcContext.Categories.ToList();
+
             return View();
         }
 
         [HttpPost]
-        public IActionResult Movies(MovieList ml)
+        public IActionResult Movies(Movie ml)
         {
-            blahContext.Add(ml);
-            return View("Confirmation");
+            if (ModelState.IsValid)
+            {
+                mcContext.Add(ml);
+                mcContext.SaveChanges();
+
+                return View("Confirmation");
+            }
+            else // if invalid
+            {
+                ViewBag.Categories = mcContext.Categories.ToList();
+
+                return View();
+            }
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        [HttpGet]
+        public IActionResult Collection()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var movies = mcContext.Movies
+                .Include(x => x.Category)
+                .OrderBy(x => x.Title)
+                .ToList();
+
+            return View(movies);
+        }
+
+        [HttpGet]
+        public IActionResult Edit(int movieid)
+        {
+            ViewBag.Categories = mcContext.Categories.ToList();
+
+            var movie = mcContext.Movies.Single(x => x.MovieID == movieid);
+
+            return View("Movies", movie);
+        }
+
+        [HttpPost]
+        public IActionResult Edit(Movie m)
+        {
+            if (ModelState.IsValid)
+            {
+                mcContext.Update(m);
+                mcContext.SaveChanges();
+
+                return RedirectToAction("Collection");
+            }
+            else // if invalid
+            {
+                ViewBag.Categories = mcContext.Categories.ToList();
+
+                return View("Movies", m);
+            }
+            
+        }
+
+        [HttpGet]
+        public IActionResult Delete(int movieid)
+        {
+            var movie = mcContext.Movies.Single(x => x.MovieID == movieid);
+
+            return View(movie);
+        }
+
+        [HttpPost]
+        public IActionResult Delete(Movie m)
+        {
+            mcContext.Movies.Remove(m);
+            mcContext.SaveChanges();
+
+            return RedirectToAction("Collection");
         }
     }
 }
